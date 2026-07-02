@@ -1,18 +1,13 @@
-package it.gr85.android.apps.em.adapters.android
+package it.gr85.android.apps.em.adapters.android.room
 
-import it.gr85.android.apps.em.domain.model.Category
-import it.gr85.android.apps.em.domain.model.Transaction
-import it.gr85.android.apps.em.domain.model.idFrom
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
 // le entities "mappano" gli oggetti di dominio come li vede il database.
 // questi poi devono avere i layer di accesso, cioè i DAOs.
-interface CategoryEntity {
-    fun toDomain(): Category
-}
-
-interface TransactionEntity {
-    fun toDomain(): Transaction
-}
 
 
 // time to long -> System.currentTimeMillis()
@@ -26,33 +21,25 @@ data class Timestamps(
 )
 
 
+
 @Entity(
-    table_name = "categories",
+    tableName = "categories",
     indices = [
-        Index(value = ["name"], unique = true )
+        Index(value = ["name"], unique = true)
     ]
 )
 data class AndroidRoomCategoryEntity (
-    @PrimaryKey @ColumnInfo(name = "id")        val id        : String,
-                @ColumnInfo(name = "name")      val name      : String,
-                @ColumnInfo(name = "hex_color") val hexColor  : String,
-                @Embedded                       val timestamps: Timestamps
-) : CategoryEntity {
-
-    override fun toDomain(): Category {
-        return Category(
-            id = idFrom( this.id ),
-            name = this.name,
-            colorHexCode = this.hexColor
-        )
-    }
-}
+    @PrimaryKey @ColumnInfo(name = "id") val id        : String,
+    @ColumnInfo(name = "name")      val name      : String,
+    @ColumnInfo(name = "hex_color") val hexColor  : String,
+    @Embedded                       val timestamps: Timestamps
+)
 
 
 @Entity(
-    table_name = "transactions",
+    tableName = "transactions",
     indices = [
-        Index( value = "category_id" )
+        Index( value = ["category_id"] )
     ]
 )
 data class AndroidRoomTransactionEntity (
@@ -62,5 +49,5 @@ data class AndroidRoomTransactionEntity (
                 @ColumnInfo( name = "date")        val date       : Long,
                 @ColumnInfo( name = "description") val description: String,
                 @ColumnInfo( name = "category_id") val category_id: String,
-                @Embedded                          val timestamps : Timestamps
-) : TransactionEntity
+                @Embedded val timestamps : Timestamps
+)

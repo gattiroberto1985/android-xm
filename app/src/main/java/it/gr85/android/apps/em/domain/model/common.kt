@@ -27,3 +27,26 @@ enum class MovementType {
 open class BaseObject(
     open val id: Id
 )
+
+
+@JvmInline
+value class Color private constructor(
+    val value: String
+) {
+
+    companion object {
+
+        private val REGEX =
+            // Regex("^#(?:[0-9a-fA-F]{6})$")
+            Regex("^#[0-9a-fA-F]{6}$")
+
+        fun of(raw: String): Color {
+
+            require(REGEX.matches(raw)) {
+                "Invalid color format"
+            }
+
+            return Color(raw.uppercase())
+        }
+    }
+}

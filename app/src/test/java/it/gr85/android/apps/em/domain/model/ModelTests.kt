@@ -25,21 +25,21 @@ class ModelTests {
 
     @Test
     fun testCategory() {
-        val c1 = Category( newId(), "category 1", "#aabbcc")
+        val c1 = Category( newId(), "category 1", Color.of( "#aabbcc") )
         //assert( c1.id != null)
-        assert( c1.name.equals("category 1"))
-        assert( c1.colorHexCode.equals("#aabbcc"))
+        assert(c1.name == "category 1")
+        assert( c1.color.equals(Color.of( "#aabbcc")))
     }
 
 
     @Test
     fun testMovement() {
         val now = Date.now()
-        val category = Category( newId(), "cat1", "#ffeedd")
+        val category = Category( newId(), "cat1", Color.of( "#ffeedd") )
         val m1 = Transaction(
             newId(),
             MovementType.INCOME,
-            8.34,
+            8.34f,
             now,
             "entrata di test",
             category)
@@ -47,6 +47,6 @@ class ModelTests {
         var formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy")
 
         assert( m1.date.format( formatter ).equals( now.format( formatter ) ) )
-        assert( m1.amount == 8.34 )
+        assert( m1.amount == 8.34f )
     }
 }

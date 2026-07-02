@@ -2,6 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+configurations {
+    create("cleanedAnnotations")
+    implementation {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
+}
+
 android {
     namespace = "it.gr85.android.apps.em"
     compileSdk {
@@ -38,9 +45,13 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.room.common.jvm)
     implementation(libs.material)
     implementation(libs.androidx.room.compiler)
+    testImplementation(libs.mockk)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(kotlin("test"))
 }

@@ -7,4 +7,14 @@ data class Transaction(
     val date: Date,
     val description: String,
     val category: Category
-) : BaseObject(id)
+) : BaseObject(id) {
+
+    init {
+        require(
+            amount != 0f &&
+            description.isNotBlank()
+        )
+
+    }
+
+}
