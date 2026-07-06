@@ -28,7 +28,7 @@ data class Timestamps(
         Index(value = ["name"], unique = true)
     ]
 )
-data class AndroidRoomCategoryEntity (
+data class ARCategoryEntity (
     @PrimaryKey @ColumnInfo(name = "id") val id        : String,
     @ColumnInfo(name = "name")      val name      : String,
     @ColumnInfo(name = "hex_color") val hexColor  : String,
@@ -42,7 +42,7 @@ data class AndroidRoomCategoryEntity (
         Index( value = ["category_id"] )
     ]
 )
-data class AndroidRoomTransactionEntity (
+data class ARTransactionEntity (
     @PrimaryKey @ColumnInfo( name = "id"  )        val id         : String,
                 @ColumnInfo( name = "type")        val type       : String,
                 @ColumnInfo( name = "amount")      val amount     : Float,

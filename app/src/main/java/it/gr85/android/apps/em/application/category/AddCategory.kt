@@ -17,12 +17,12 @@ class AddCategoryUseCase(
     private val colorGenerator: ColorGenerator
 ) {
 
-    // consente l'utilizzo con solo addCategory(category) !
+    // consente l'utilizzo con solo addCategoryUseCase(category) !
     suspend operator fun invoke(
         command: AddCategoryCommand
     ): Category {
 
-        if ( categoryRepository.getByName(command.name) == null ) {
+        if ( categoryRepository.getByName(command.name) != null ) {
             throw DuplicateCategoryException()
         }
 

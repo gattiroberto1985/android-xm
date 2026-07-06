@@ -6,8 +6,8 @@ import it.gr85.android.apps.em.domain.model.Id
 import it.gr85.android.apps.em.domain.ports.CategoryRepository
 import kotlin.collections.map
 
-class AndroidRoomCategoryRepositoryImpl(
-    private val arCategoryDao: AndroidRoomCategoryDao,
+class ARCategoryRepository(
+    private val arCategoryDao: ARCategoryDao,
     private val now: () -> Long = { System.currentTimeMillis() }
 ) : CategoryRepository {
 
@@ -21,7 +21,7 @@ class AndroidRoomCategoryRepositoryImpl(
 
 
     override suspend fun getAll(): List<Category> {
-        return arCategoryDao.getAll().map ( AndroidRoomCategoryEntity::toDomain )
+        return arCategoryDao.getAll().map ( ARCategoryEntity::toDomain )
     }
 
     override suspend fun getUsedColors(): Set<Color> {
@@ -29,7 +29,7 @@ class AndroidRoomCategoryRepositoryImpl(
     }
 
     override suspend fun search(name: String): List<Category> {
-        return arCategoryDao.search(name).map ( AndroidRoomCategoryEntity::toDomain )
+        return arCategoryDao.search(name).map ( ARCategoryEntity::toDomain )
     }
 
     override suspend fun save(category: Category): Category {

@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.room.common.jvm)
     implementation(libs.material)
     implementation(libs.androidx.room.compiler)
+    implementation(libs.androidx.sqlite.ktx)
     testImplementation(libs.mockk)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

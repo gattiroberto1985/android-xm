@@ -20,8 +20,8 @@ class AndroidRoomCategoryRepositoryTest {
 
     private val __updatedTimestamp = 16042007L
 
-    private val dao = mockk<AndroidRoomCategoryDao>()
-    private val cr = AndroidRoomCategoryRepositoryImpl(
+    private val dao = mockk<ARCategoryDao>()
+    private val cr = ARCategoryRepository(
         arCategoryDao = dao,
         now = { __updatedTimestamp }
     )
@@ -57,7 +57,7 @@ class AndroidRoomCategoryRepositoryTest {
         // Given
         val id : Id = newId()
         val c = Category(id, "aaa", Color.of( "#112233"))
-        val ceExisting = AndroidRoomCategoryEntity(
+        val ceExisting = ARCategoryEntity(
            id = id.toString(),
             name ="aaa",
             hexColor = "#112233",

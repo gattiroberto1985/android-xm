@@ -15,8 +15,6 @@ fun isValidId( id: Id) : Boolean = run {
             id.toString().trim() == ""
 }
 
-// endregion ID DEFINITION
-
 
 enum class MovementType {
     INCOME,
@@ -48,5 +46,11 @@ value class Color private constructor(
 
             return Color(raw.uppercase())
         }
+    }
+}
+
+public class Constants {
+    companion object {
+        const val DEFAULT_CATEGORY_NAME = "OTHER" // TODO: how to improve??
     }
 }
