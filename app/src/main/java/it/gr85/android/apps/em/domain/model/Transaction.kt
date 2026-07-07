@@ -3,7 +3,7 @@ package it.gr85.android.apps.em.domain.model
 data class Transaction(
     override val id: Id,
     val type: MovementType,
-    val amount: Float,
+    val amount: MoneyAmount,
     val date: Date,
     val description: String,
     val category: Category
@@ -11,7 +11,7 @@ data class Transaction(
 
     init {
         require(
-            amount != 0f &&
+            amount != 0L &&
             description.isNotBlank()
         )
 
@@ -32,4 +32,4 @@ data class TransactionSearchQuery(
 
 
 data class DateRange(val start: Date, val end: Date)
-data class AmountRange(val min: Float, val max: Float)
+data class AmountRange(val min: MoneyAmount, val max: MoneyAmount)

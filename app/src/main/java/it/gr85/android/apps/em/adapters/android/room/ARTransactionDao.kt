@@ -46,8 +46,8 @@ interface ARTransactionDao {
         categoryId: String?,
         type: String?,
         descriptionQuery: String?,
-        minAmount: Float?,
-        maxAmount: Float?
+        minAmount: Long?,
+        maxAmount: Long?
     ): List<ARTransactionEntity>
 
     @Insert

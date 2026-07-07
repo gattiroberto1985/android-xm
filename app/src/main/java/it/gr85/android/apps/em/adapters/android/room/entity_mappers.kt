@@ -1,12 +1,13 @@
 package it.gr85.android.apps.em.adapters.android.room
 
 import it.gr85.android.apps.em.domain.model.Category
+import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
 import it.gr85.android.apps.em.domain.model.Color
 import it.gr85.android.apps.em.domain.model.Date
+import it.gr85.android.apps.em.domain.model.Id
 import it.gr85.android.apps.em.domain.model.MovementType
 import it.gr85.android.apps.em.domain.model.Transaction
 import it.gr85.android.apps.em.domain.model.idFrom
-import java.time.LocalDate
 
 fun Category.toAndroidRoomEntity(timestamps: Timestamps): ARCategoryEntity =
     ARCategoryEntity(
@@ -32,7 +33,7 @@ fun Transaction.toAndroidRoomEntity(timestamps: Timestamps): ARTransactionEntity
         amount = this.amount,
         date = this.date.toEpochDay(),
         description = description,
-        category_id = this.category.id.toString()
+        categoryId = this.category.id.toString()
     )
 
 fun ARTransactionEntity.toDomain(c: Category) =
@@ -46,3 +47,9 @@ fun ARTransactionEntity.toDomain(c: Category) =
 
     )
 
+fun CategoryExpenseRow.toDomain( ) =
+    CategoryExpenseBreakdown(
+        Category( id = idFrom(categoryId), name = this.categoryName, color = Color.of( this.categoryColor ) ),
+        totalAmount = this.totalAmount,
+        transactionCount = this.transactionCount
+    )

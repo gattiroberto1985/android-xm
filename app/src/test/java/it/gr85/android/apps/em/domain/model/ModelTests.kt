@@ -39,7 +39,7 @@ class ModelTests {
         val m1 = Transaction(
             newId(),
             MovementType.INCOME,
-            8.34f,
+            834,
             now,
             "entrata di test",
             category)
@@ -47,6 +47,6 @@ class ModelTests {
         var formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy")
 
         assert( m1.date.format( formatter ).equals( now.format( formatter ) ) )
-        assert( m1.amount == 8.34f )
+        assert( m1.amount == 834L )
     }
 }

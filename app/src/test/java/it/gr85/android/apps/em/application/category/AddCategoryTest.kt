@@ -2,7 +2,9 @@ package it.gr85.android.apps.em.application.category
 
 import it.gr85.android.apps.em.application.services.PaletteColorGenerator
 import it.gr85.android.apps.em.domain.model.Category
+import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
 import it.gr85.android.apps.em.domain.model.Color
+import it.gr85.android.apps.em.domain.model.Date
 import it.gr85.android.apps.em.domain.model.Id
 import it.gr85.android.apps.em.domain.ports.CategoryRepository
 import kotlinx.coroutines.test.runTest
@@ -30,6 +32,12 @@ class CategoryRepositoryFixture : CategoryRepository {
     override suspend fun save(category: Category): Category { return category }
 
     override suspend fun delete(id: Id) { }
+    override suspend fun getExpenseBreakdown(
+        startDate: Date,
+        endDate: Date
+    ): List<CategoryExpenseBreakdown> {
+        TODO("Not yet implemented")
+    }
 
 }
 

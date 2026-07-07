@@ -15,3 +15,10 @@ data class Category (
 
 }
 
+
+data class CategoryExpenseBreakdown(
+    val category: Category,
+    val totalAmount: MoneyAmount,
+    val transactionCount: Int,
+    val percentageOfTotal: Float = 0f
+)

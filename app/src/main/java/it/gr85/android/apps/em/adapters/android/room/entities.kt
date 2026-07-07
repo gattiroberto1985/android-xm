@@ -44,10 +44,18 @@ data class ARCategoryEntity (
 )
 data class ARTransactionEntity (
     @PrimaryKey @ColumnInfo( name = "id"  )        val id         : String,
-                @ColumnInfo( name = "type")        val type       : String,
-                @ColumnInfo( name = "amount")      val amount     : Float,
-                @ColumnInfo( name = "date")        val date       : Long,
-                @ColumnInfo( name = "description") val description: String,
-                @ColumnInfo( name = "category_id") val category_id: String,
-                @Embedded val timestamps : Timestamps
+    @ColumnInfo( name = "type")        val type       : String,
+    @ColumnInfo( name = "amount")      val amount     : Long,
+    @ColumnInfo( name = "date")        val date       : Long,
+    @ColumnInfo( name = "description") val description: String,
+    @ColumnInfo( name = "category_id") val categoryId : String,
+    @Embedded val timestamps : Timestamps
+)
+
+data class CategoryExpenseRow(
+    @ColumnInfo("id") val categoryId: String,
+    @ColumnInfo("name") val categoryName: String,
+    @ColumnInfo("color") val categoryColor: String,
+    @ColumnInfo("total_amount") val totalAmount: Long,  // in cents
+    @ColumnInfo("transaction_count") val transactionCount: Int
 )

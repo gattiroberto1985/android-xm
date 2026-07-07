@@ -17,7 +17,7 @@ class ARTransactionRepository(
 
     override suspend fun getById(id: Id): Transaction? {
         val txEntity = arTransactionDao.getById(id.toString()) ?: return null
-        val categoryEntity = arCategoryDao.findById(txEntity.category_id) ?: throw CategoryNotFoundException()
+        val categoryEntity = arCategoryDao.findById(txEntity.categoryId) ?: throw CategoryNotFoundException()
         return txEntity.toDomain(categoryEntity.toDomain())
     }
 
@@ -79,11 +79,11 @@ class ARTransactionRepository(
         transactionEntities: List<ARTransactionEntity>
     ): List<Transaction> {
         val categoriesById = arCategoryDao.getByIds(
-            transactionEntities.map { it.category_id }.distinct()
+            transactionEntities.map { it.categoryId }.distinct()
         ).associateBy { it.id }
 
         return transactionEntities.map { tx ->
-            val category = categoriesById[tx.category_id]
+            val category = categoriesById[tx.categoryId]
                 ?: throw CategoryNotFoundException()
             tx.toDomain(category.toDomain())
         }

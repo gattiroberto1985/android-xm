@@ -4,6 +4,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Dao
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ARCategoryDao {
@@ -33,4 +34,26 @@ interface ARCategoryDao {
 
     @Query("SELECT DISTINCT hex_color FROM categories")
     suspend fun getUsedColors(): Set<String>
+
+    @Query("SELECT * FROM categories ORDER BY name ASC") // occhio che va bene per robe "piccole" ( centinaia di righe)
+    suspend fun observeAll(): Flow<List<ARCategoryEntity>>
+
+    @Query("""
+        SELECT 
+            c.id,
+            c.name,
+            c.hex_color,
+            COALESCE(SUM(CAST(t.amount AS REAL)), 0) as total_amount,
+            COALESCE(COUNT(t.id), 0) as transaction_count
+        FROM categories c
+        LEFT JOIN transactions t ON c.id = t.category_id
+        WHERE t.date BETWEEN :startDateEpoch AND :endDateEpoch
+        GROUP BY c.id, c.name, c.hex_color
+        ORDER BY total_amount DESC
+    """)
+    suspend fun getExpenseBreakdown(
+        startDateEpoch: Long,
+        endDateEpoch: Long
+    ): List<CategoryExpenseRow>
+
 }

@@ -7,6 +7,7 @@ import java.util.UUID
 // region ID DEFINITION
 typealias Id = UUID
 typealias Date = LocalDate
+typealias MoneyAmount = Long // ultimi due sono centesimi, resto sono interi!
 
 fun newId(): Id = UUID.randomUUID()
 fun idFrom(s: String): Id = UUID.fromString(s)
