@@ -6,6 +6,7 @@ import androidx.room.Dao
 import androidx.room.RawQuery
 import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
+import it.gr85.android.apps.em.domain.model.Date
 
 @Dao
 interface ARTransactionDao {
@@ -69,4 +70,12 @@ interface ARTransactionDao {
         WHERE id in ( :tIds)
     """)
     suspend fun updateCategoryFor(tIds: List<String>, newCategoryId: String) : Int
+
+    @Query("""
+        SELECT sum(t.amount)
+        FROM transactions t
+        WHERE date >= :startDate
+        AND date < :endDate
+    """)
+    suspend fun getBalanceSummary( startDate: Long, endDate: Long) : Long
 }

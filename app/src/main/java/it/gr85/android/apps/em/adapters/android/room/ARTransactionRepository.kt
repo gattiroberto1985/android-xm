@@ -129,4 +129,7 @@ class ARTransactionRepository(
         arTransactionDao.reassignTransactionsByCategory( fromCategory.id.toString(), toCategory.id.toString() )
     }
 
+    override suspend fun getBalanceSummary( startDate: Date, endDate: Date) : Long {
+        return arTransactionDao.getBalanceSummary( startDate.toEpochDay(), endDate.toEpochDay())
+    }
 }

@@ -18,4 +18,6 @@ interface TransactionRepository {
     suspend fun updateCategoryForAll(transactionIds: List<Id>, newCategory: Category): Int
 
     suspend fun reassignTransactionsByCategory(fromCategory: Category, toCategory: Category )
+
+    suspend fun getBalanceSummary( startDate: Date, endDate: Date) : Long
 }

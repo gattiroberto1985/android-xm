@@ -31,5 +31,14 @@ data class TransactionSearchQuery(
 )
 
 
-data class DateRange(val start: Date, val end: Date)
+data class DateRange(val start: Date, val end: Date) {
+    companion object {
+        fun default30Days(): DateRange {
+            val today = Date.now() // should be injected as dependency, for test purposes?
+            val thirtyDaysAgo = today.minusDays(30)
+            return DateRange(thirtyDaysAgo, today)
+        }
+    }
+}
+
 data class AmountRange(val min: MoneyAmount, val max: MoneyAmount)
