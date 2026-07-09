@@ -176,15 +176,38 @@ class HomeUiViewModel(
 
     }
 
-    fun onCategoryTap() { }
+    fun onLegendToggle() {
+        _uiState.value = _uiState.value.copy(
+            legendExpanded = !_uiState.value.legendExpanded
+        )
+    }
 
-    fun onLegendToggle() { }
+    fun onCategoryTap( categoryId: String) {
+        viewModelScope.launch {
+            _uiEvent.emit(HomeUiEvent.OnCategoryTap(categoryId))
+        }
+    }
 
-    fun onSettingsTap() { }
+    fun onSettingsTap() {
+        // qui semplicemente deleghiamo alla UI
+        viewModelScope.launch {
+            _uiEvent.emit(HomeUiEvent.OnSettingsClick)
+        }
+    }
 
-    fun onSearchTap() { }
+    fun onSearchTap() {
+        // qui semplicemente deleghiamo alla UI
+        viewModelScope.launch {
+            _uiEvent.emit(HomeUiEvent.OnSearchClick)
+        }
+    }
 
-    fun onRetry() { }
+    fun onRetry() {
+        // La retry semplicemente invalida i dati e forza il reload
+        viewModelScope.launch {
+            _invalidateSignal.emit(Unit)
+        }
+    }
 
     // endregion EVENT HANDLER
 }
