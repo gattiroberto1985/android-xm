@@ -1,51 +1,108 @@
 package it.gr85.android.apps.em.ui.home
 
+import android.util.Log
+import androidx.compose.material3.Button
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
+import it.gr85.android.apps.em.ui.home.components.MyDp
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    /*viewModel: HomeUiViewModel,
+    viewModel: HomeUiViewModel,
     onNavigateToCategoryDetail: (categoryId: String) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToSearch: () -> Unit,*/
+    onNavigateToSearch: () -> Unit,
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackScope = rememberCoroutineScope()
+
+    // EFFETTO 1: Navigazione (richiede viewModel)
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is HomeUiEvent.OnCategoryTap -> {
+                    onNavigateToCategoryDetail(event.categoryId)
+                }
+                is HomeUiEvent.OnSettingsClick -> {
+                    onNavigateToSettings()
+                }
+                is HomeUiEvent.OnSearchClick -> {
+                    onNavigateToSearch()
+                }
+            }
+        }
+    }
+
+    // EFFETTO 2: Snackbar (richiede snackbarHostState)
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            snackScope.launch {
+                snackbarHostState.showSnackbar(message)
+            }
+        }
+    }
+    HomeScreenContent(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onDateRangeSelected = { start, end ->
+            viewModel.onDateRangeChanged(start, end)
+        },
+        onNavigateToCategoryDetail = onNavigateToCategoryDetail,
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToSearch = onNavigateToSearch
+    )
+}
+
+@Composable
+fun HomeScreenContent(
+    uiState: HomeUiState,
+    onDateRangeSelected: (start: String, end: String) -> Unit,
+    onNavigateToCategoryDetail: (categoryId: String) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearch: () -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
 
-    //// region FORGET FOR NOW
-    //
-    //// observe sullo stato del viewModel!
-    //val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    //
-    //// observe per gli eventi
-    //LaunchedEffect(Unit) {
-    //    viewModel.uiEvent.collect { event ->
-    //        when (event) {
-    //            is HomeUiEvent.OnCategoryTap -> {
-    //                onNavigateToCategoryDetail(event.categoryId)
-    //            }
-    //            is HomeUiEvent.OnSettingsClick -> {
-    //                onNavigateToSettings()
-    //            }
-    //            is HomeUiEvent.OnSearchClick -> {
-    //                onNavigateToSearch()
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //// endregion FORGET FOR NOW
+    MyDp( uiState.dateRange.start, uiState.dateRange.end)
 
     Text(
         text = "Hello from compose!"
     )
+
+    Button(
+        onClick = {
+            /*snackScope.launch {
+                snackState.showSnackbar("Hello from snackbar!")
+            }*/
+        }
+    ) {
+        Log.i( "EMBOB", "Button clicked, launching snackbar notification!" )
+        Text(text = "Send a notification in the snackbar")
+    }
 }
 
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreenContent(
+        uiState = HomeUiState(),
+        snackbarHostState = SnackbarHostState(),
+        onDateRangeSelected = { _, _ -> },
+        onNavigateToCategoryDetail = {},
+        onNavigateToSettings = {},
+        onNavigateToSearch = {}
+    )
 }

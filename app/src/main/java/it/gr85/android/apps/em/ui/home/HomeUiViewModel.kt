@@ -147,7 +147,23 @@ class HomeUiViewModel(
 
 
     // region EVENT HANDLER
-    fun onDateRangeChanged(from: Date, to: Date) {
+    fun onDateRangeChanged(fromDateStr: String, toDateStr: String) {
+        val from = try {
+            Date.parse(fromDateStr)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Data start non valida!"
+            )
+            return
+        }
+        val to = try {
+            Date.parse(toDateStr)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Data end non valida!"
+            )
+            return
+        }
         if ( from > to ) {
             // NON si deve fare _uiState.value.error = "..." perchè con questa istruzione
             // NON vado a modificare il reference _uiState... cambio i valori al suo interno

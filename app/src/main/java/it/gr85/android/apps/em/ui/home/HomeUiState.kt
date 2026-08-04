@@ -10,7 +10,8 @@ data class HomeUiState (
     val categoryExpensesBreakdown : List<CategoryExpenseBreakdownUi> = emptyList(),
     val dateRange                 : DateRange = DateRange.default30Days(),
     val balance                   : Long? = null,
-    val error                     : String? = null
+    val error                     : String? = null,
+    val snackbarMessage           : String? = null,
 ) {
     val balanceFormatted: String get() =
         if (balance != null) {
