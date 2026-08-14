@@ -1,6 +1,7 @@
 package it.gr85.android.apps.em.ui.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,8 +30,11 @@ import androidx.compose.material3.getSelectedStartDate
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -43,69 +47,47 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyDp(
     from: LocalDate = LocalDate.now().minusDays(30),
     to: LocalDate = LocalDate.now(),
     onRangeDateSelected: (startDate: String, endDate: String) -> Unit = { _, _ -> },
-    onCloseDatePicker: () -> Unit,
 ) {
 
-    val state =
-        rememberDateRangePickerState( // Datepicker è un componente nativo di android con il
-                                      // relativo stage
-            initialSelectedStartDate = from,
-            initialSelectedEndDate = to,
-        )
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    /*
-    // Lo snackbar è un componente lightweight in fondo alla ui dove vivono le notifiche temporanee
+    val state = rememberDateRangePickerState(
+        initialSelectedStartDate = from,
+        initialSelectedEndDate = to,
+    )
 
-    val snackState = remember { SnackbarHostState() } // Lo state dello snackbar. Il remember salva in
-                                                      // maniera persistente e safe durante le
-                                                      // ricomposizioni della ui lo state.
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clickable(onClick = { showDatePicker = true })
+    ) {
+        // usare interfaccia TextFormatter con metodo format
+        Text(text = state.getSelectedStartDate().toString() )
+        Text(text = " - ")
+        Text(text = state.getSelectedEndDate().toString() )
+    }
 
-    val snackScope = rememberCoroutineScope() // Lanciare le notifiche significa lanciare delle
-                                              // coroutine, ma per farlo serve uno scope! Eccolo qua!
-
-    SnackbarHost(hostState = snackState, Modifier.zIndex(1f)) // Il componente composable che mostra lo snackbar
-    */
-    // Creates a state with pre-selected date range.
-
-
+    if ( !showDatePicker ) {
+        return
+    }
+    // else : mostra il date range picker!
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top) {
-        // Add a row with "Save" and dismiss actions.
         Row(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .background(DatePickerDefaults.colors().containerColor)
-                    .padding(start = 12.dp, end = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(DatePickerDefaults.colors().containerColor)
+                .padding(start = 12.dp, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            TooltipBox(
-                positionProvider =
-                    TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                tooltip = {
-                    PlainTooltip(
-                        modifier =
-                            Modifier.semantics {
-                                // TODO(b/496338253): Remove this modifier once bug where tooltip
-                                //  text is not announced by a11y screen readers is resolved.
-                                liveRegion = LiveRegionMode.Assertive
-                                paneTitle = "Close"
-                            }
-                    ) {
-                        Text("Close")
-                    }
-                },
-                state = rememberTooltipState(),
-            ) {
-                IconButton(onClick =  onCloseDatePicker ) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
-                }
+            IconButton(onClick = { showDatePicker = false }) {  // ← Ora funziona!
+                Icon(Icons.Filled.Close, contentDescription = "Close")
             }
             TextButton(
                 onClick = {
@@ -113,13 +95,8 @@ fun MyDp(
                         state.getSelectedStartDate().toString(),
                         state.getSelectedEndDate().toString()
                     )
+                    showDatePicker = false  // ← Auto-chiudi dopo salvataggio
                 },
-                /*onClick = {
-                    snackScope.launch {
-                        val range = state.getSelectedStartDate()!!..state.getSelectedEndDate()!!
-                        snackState.showSnackbar("Saved range: $range")
-                    }
-                },*/
                 enabled = state.getSelectedEndDate() != null,
             ) {
                 Text(text = "Save")

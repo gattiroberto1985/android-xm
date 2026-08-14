@@ -31,8 +31,6 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val snackScope = rememberCoroutineScope()
 
-    var showDatePicker by remember { mutableStateOf( false )  }
-
     // EFFETTO 1: Navigazione (richiede viewModel)
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
@@ -61,11 +59,8 @@ fun HomeScreen(
 
     HomeScreenContent(
         uiState = uiState,
-        isDatePickerOpen = showDatePicker,
         snackbarHostState = snackbarHostState,
         onDateRangeSelected = { start, end -> viewModel.onDateRangeChanged(start, end) },
-        onCloseDatePicker = { showDatePicker = false },
-        onShowDatePicker = { showDatePicker = true },
         onNavigateToCategoryDetail = onNavigateToCategoryDetail,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToSearch = onNavigateToSearch
@@ -75,24 +70,18 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
-    isDatePickerOpen: Boolean,
     onDateRangeSelected: (start: String, end: String) -> Unit,
-    onCloseDatePicker: () -> Unit,
-    onShowDatePicker: () -> Unit,
     onNavigateToCategoryDetail: (categoryId: String) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToSearch: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
 
-    if ( isDatePickerOpen ) {
-        MyDp(
-            from = uiState.dateRange.start,
-            to = uiState.dateRange.end,
-            onRangeDateSelected = onDateRangeSelected,
-            onCloseDatePicker = onCloseDatePicker
-        )
-    }
+    MyDp(
+        from = uiState.dateRange.start,
+        to = uiState.dateRange.end,
+        onRangeDateSelected = onDateRangeSelected
+    )
 
     /*Button(
         onClick = {
@@ -111,18 +100,13 @@ fun HomeScreenContent(
 @Composable
 fun HomeScreenPreview(
     onDateRangeSelected: (start: String, end: String) -> Unit = { _, _ -> },
-    /*onCloseDatePicker: () -> Unit = {},
-    onShowDatePicker: () -> Unit = {},*/
 ) {
     var showDatePicker by remember { mutableStateOf( true )  }
 
     HomeScreenContent(
         uiState = HomeUiState(),
-        isDatePickerOpen = showDatePicker,
         snackbarHostState = SnackbarHostState(),
         onDateRangeSelected = onDateRangeSelected,
-        onCloseDatePicker = { showDatePicker = false },
-        onShowDatePicker = { showDatePicker = true },
         onNavigateToCategoryDetail = {},
         onNavigateToSettings = {},
         onNavigateToSearch = {}
