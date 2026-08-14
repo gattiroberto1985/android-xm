@@ -22,6 +22,7 @@ import it.gr85.android.apps.em.ui.AppShapes
 import it.gr85.android.apps.em.ui.AppSpacing
 
 
+/*@Preview
 @Composable
 fun BalanceCard(
     balance: Long,
@@ -102,7 +103,7 @@ fun BalanceCard(
             }
         }
     }
-}
+}*/
 
 /*
   |--------------------------|

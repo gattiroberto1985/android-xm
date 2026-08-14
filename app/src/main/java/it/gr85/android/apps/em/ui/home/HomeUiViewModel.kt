@@ -114,20 +114,22 @@ class HomeUiViewModel(
         val totalAmount = breakdown.sumOf { it.totalAmount }
 
         // Trasforma dominio in UI model
-        val uiBreakdown = breakdown.map { expense ->
+        val uiBreakdown = breakdown.map { transaction ->
             val percentage = if (totalAmount > 0) {
-                (expense.totalAmount.toFloat() / totalAmount) * 100f
+                (transaction.totalAmount.toFloat() / totalAmount) * 100f
             } else {
                 0f
             }
 
             CategoryExpenseBreakdownUi(
-                categoryId = expense.category.id.toString(),
-                categoryName = expense.category.name,
-                categoryColorArgb = expense.category.color.toString().toColorInt(),
-                totalAmount = expense.totalAmount,
+                categoryId = transaction.category.id.toString(),
+                categoryName = transaction.category.name,
+                categoryColorArgb = transaction.category.color.toString().toColorInt(),
+                totalAmount = transaction.totalAmount,
+                totalIncome = 0L, // transaction.totalIncome,
+                totalExpense = 0L, //transaction.totalExpense,
                 percentageOfTotal = percentage,
-                transactionCount = expense.transactionCount
+                transactionCount = transaction.transactionCount
             )
         }
 

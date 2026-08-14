@@ -5,6 +5,8 @@ data class CategoryExpenseBreakdownUi(
     val categoryName: String,
     val categoryColorArgb: Int,  // android.graphics.Color int
     val totalAmount: Long,       // in cents
+    val totalIncome: Long,       // in cents
+    val totalExpense: Long,      // in cents
     val percentageOfTotal: Float,  // 0-100
     val transactionCount: Int
 ) {

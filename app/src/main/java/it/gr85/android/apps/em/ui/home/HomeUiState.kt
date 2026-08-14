@@ -13,13 +13,18 @@ data class HomeUiState (
     val error                     : String? = null,
     val snackbarMessage           : String? = null,
 ) {
-    val balanceFormatted: String get() =
+    /*val balanceFormatted: String get() =
         if (balance != null) {
             "€${balance / 100.0}"
         } else {
             "—"
-        }
+        }*/
+
+    val dateRangeBalance : Long get() = balance ?: 0L
 
     val totalExpense: Long get() =
-        categoryExpensesBreakdown.sumOf { it.totalAmount }
+        categoryExpensesBreakdown.sumOf { it.totalExpense }
+
+    val totalIncome: Long get() =
+        categoryExpensesBreakdown.sumOf { it.totalIncome }
 }

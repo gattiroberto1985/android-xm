@@ -1,6 +1,8 @@
 package it.gr85.android.apps.em.ui.home
 
 import android.util.Log
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -13,11 +15,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
+import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
+import it.gr85.android.apps.em.ui.home.components.PieChartWithLegend
+import it.gr85.android.apps.em.ui.home.components.PieSlice
 import kotlinx.coroutines.launch
 
 @Composable
@@ -77,11 +83,34 @@ fun HomeScreenContent(
     snackbarHostState: SnackbarHostState
 ) {
 
-    MyDp(
-        from = uiState.dateRange.start,
-        to = uiState.dateRange.end,
-        onRangeDateSelected = onDateRangeSelected
-    )
+    Column(
+        modifier = Modifier.fillMaxWidth().zIndex(1f)
+    ) {
+        MyDp(
+            from = uiState.dateRange.start,
+            to = uiState.dateRange.end,
+            onRangeDateSelected = onDateRangeSelected
+        )
+
+        BalanceSummaryCard(
+            balance = uiState.dateRangeBalance,
+            totalIncome = uiState.totalIncome,
+            totalExpense = uiState.totalExpense
+        )
+
+        PieChartWithLegend(
+            slices = uiState.categoryExpensesBreakdown.map {
+                PieSlice(
+                    label = it.categoryName,
+                    value = it.totalAmount.toFloat(),
+                    color = Color(it.categoryColorArgb)
+                )
+            },
+            onSliceTapped = { slice ->
+                onNavigateToCategoryDetail(slice.label)
+            }
+        )
+    }
 
     /*Button(
         onClick = {
@@ -101,7 +130,6 @@ fun HomeScreenContent(
 fun HomeScreenPreview(
     onDateRangeSelected: (start: String, end: String) -> Unit = { _, _ -> },
 ) {
-    var showDatePicker by remember { mutableStateOf( true )  }
 
     HomeScreenContent(
         uiState = HomeUiState(),
