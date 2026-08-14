@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
@@ -28,6 +30,8 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val snackScope = rememberCoroutineScope()
+
+    var showDatePicker by remember { mutableStateOf( false )  }
 
     // EFFETTO 1: Navigazione (richiede viewModel)
     LaunchedEffect(Unit) {
@@ -54,12 +58,14 @@ fun HomeScreen(
             }
         }
     }
+
     HomeScreenContent(
         uiState = uiState,
+        isDatePickerOpen = showDatePicker,
         snackbarHostState = snackbarHostState,
-        onDateRangeSelected = { start, end ->
-            viewModel.onDateRangeChanged(start, end)
-        },
+        onDateRangeSelected = { start, end -> viewModel.onDateRangeChanged(start, end) },
+        onCloseDatePicker = { showDatePicker = false },
+        onShowDatePicker = { showDatePicker = true },
         onNavigateToCategoryDetail = onNavigateToCategoryDetail,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToSearch = onNavigateToSearch
@@ -69,38 +75,54 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
+    isDatePickerOpen: Boolean,
     onDateRangeSelected: (start: String, end: String) -> Unit,
+    onCloseDatePicker: () -> Unit,
+    onShowDatePicker: () -> Unit,
     onNavigateToCategoryDetail: (categoryId: String) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToSearch: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
 
-    MyDp( uiState.dateRange.start, uiState.dateRange.end)
+    if ( isDatePickerOpen ) {
+        MyDp(
+            from = uiState.dateRange.start,
+            to = uiState.dateRange.end,
+            onRangeDateSelected = onDateRangeSelected,
+            onCloseDatePicker = onCloseDatePicker
+        )
+    }
 
-    Text(
-        text = "Hello from compose!"
-    )
-
-    Button(
+    /*Button(
         onClick = {
-            /*snackScope.launch {
-                snackState.showSnackbar("Hello from snackbar!")
-            }*/
+            snackScope.launch {
+                snackbarHostState.showSnackbar("Hello from snackbar!")
+            }
+            Log.i( "EMBOB", "Button clicked, launching snackbar notification!" )
         }
     ) {
         Log.i( "EMBOB", "Button clicked, launching snackbar notification!" )
         Text(text = "Send a notification in the snackbar")
-    }
+    }*/
 }
 
 @Preview
 @Composable
-fun HomeScreenPreview() {
+fun HomeScreenPreview(
+    onDateRangeSelected: (start: String, end: String) -> Unit = { _, _ -> },
+    /*onCloseDatePicker: () -> Unit = {},
+    onShowDatePicker: () -> Unit = {},*/
+) {
+    var showDatePicker by remember { mutableStateOf( true )  }
+
     HomeScreenContent(
         uiState = HomeUiState(),
+        isDatePickerOpen = showDatePicker,
         snackbarHostState = SnackbarHostState(),
-        onDateRangeSelected = { _, _ -> },
+        onDateRangeSelected = onDateRangeSelected,
+        onCloseDatePicker = { showDatePicker = false },
+        onShowDatePicker = { showDatePicker = true },
         onNavigateToCategoryDetail = {},
         onNavigateToSettings = {},
         onNavigateToSearch = {}

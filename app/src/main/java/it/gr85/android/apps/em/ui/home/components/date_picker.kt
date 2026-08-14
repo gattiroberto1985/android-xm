@@ -49,7 +49,8 @@ import java.time.LocalDate
 fun MyDp(
     from: LocalDate = LocalDate.now().minusDays(30),
     to: LocalDate = LocalDate.now(),
-    onRangeDateSelected: (startDate: String, endDate: String) -> Unit = { _, _ -> }
+    onRangeDateSelected: (startDate: String, endDate: String) -> Unit = { _, _ -> },
+    onCloseDatePicker: () -> Unit,
 ) {
 
     val state =
@@ -102,7 +103,7 @@ fun MyDp(
                 },
                 state = rememberTooltipState(),
             ) {
-                IconButton(onClick = { /* dismiss the UI */ }) {
+                IconButton(onClick =  onCloseDatePicker ) {
                     Icon(Icons.Filled.Close, contentDescription = "Close")
                 }
             }

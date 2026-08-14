@@ -51,8 +51,9 @@ android {
 dependencies {
     // BOM per gestire tutte le versioni Compose
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.compose.material.icons.extended)
-
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.room.common.jvm)
@@ -64,6 +65,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.material)
     testImplementation(libs.mockk)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
