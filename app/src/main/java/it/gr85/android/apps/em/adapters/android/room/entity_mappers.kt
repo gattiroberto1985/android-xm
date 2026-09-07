@@ -50,6 +50,7 @@ fun ARTransactionEntity.toDomain(c: Category) =
 fun CategoryExpenseRow.toDomain( ) =
     CategoryExpenseBreakdown(
         Category( id = idFrom(categoryId), name = this.categoryName, color = Color.of( this.categoryColor ) ),
-        totalAmount = this.totalAmount,
+        totalExpense = this.totalExpense,
+        totalIncome = this.totalIncome,
         transactionCount = this.transactionCount
     )

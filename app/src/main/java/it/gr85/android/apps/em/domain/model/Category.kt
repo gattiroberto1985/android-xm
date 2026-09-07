@@ -18,7 +18,10 @@ data class Category (
 
 data class CategoryExpenseBreakdown(
     val category: Category,
-    val totalAmount: MoneyAmount,
+    val totalIncome: MoneyAmount,
+    val totalExpense: MoneyAmount,
     val transactionCount: Int,
     val percentageOfTotal: Float = 0f
-)
+) {
+    val totalAmount: MoneyAmount get() = totalIncome + totalExpense
+}

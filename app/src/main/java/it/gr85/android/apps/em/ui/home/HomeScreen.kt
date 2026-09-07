@@ -1,7 +1,9 @@
 package it.gr85.android.apps.em.ui.home
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHost
@@ -24,6 +26,7 @@ import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
 import it.gr85.android.apps.em.ui.home.components.PieChartWithLegend
 import it.gr85.android.apps.em.ui.home.components.PieSlice
+import it.gr85.android.apps.em.ui.model.CategoryExpenseBreakdownUi
 import kotlinx.coroutines.launch
 
 @Composable
@@ -98,18 +101,36 @@ fun HomeScreenContent(
             totalExpense = uiState.totalExpense
         )
 
-        PieChartWithLegend(
-            slices = uiState.categoryExpensesBreakdown.map {
-                PieSlice(
-                    label = it.categoryName,
-                    value = it.totalAmount.toFloat(),
-                    color = Color(it.categoryColorArgb)
-                )
-            },
-            onSliceTapped = { slice ->
-                onNavigateToCategoryDetail(slice.label)
-            }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            PieChartWithLegend(
+                slices = uiState.categoryExpensesBreakdown.map {
+                    PieSlice(
+                        label = it.categoryName,
+                        value = it.totalExpense.toFloat(),
+                        color = Color(it.categoryColorArgb)
+                    )
+                },
+                onSliceTapped = { slice ->
+                    onNavigateToCategoryDetail(slice.label)
+                }
+            )
+            PieChartWithLegend(
+                slices = uiState.categoryExpensesBreakdown.map {
+                    PieSlice(
+                        label = it.categoryName,
+                        value = it.totalIncome.toFloat(),
+                        color = Color(it.categoryColorArgb)
+                    )
+                },
+                onSliceTapped = { slice ->
+                    onNavigateToCategoryDetail(slice.label)
+                }
+            )
+
+        }
     }
 
     /*Button(
@@ -131,8 +152,42 @@ fun HomeScreenPreview(
     onDateRangeSelected: (start: String, end: String) -> Unit = { _, _ -> },
 ) {
 
+    val homeUiState = HomeUiState(
+        categoryExpensesBreakdown = listOf(
+            CategoryExpenseBreakdownUi(
+                categoryId = "1",
+                categoryName = "Food",
+                categoryColorArgb = 0xFFFF0000.toInt(),
+                totalAmount = 5000,
+                totalIncome = 0,
+                totalExpense = 5000,
+                percentageOfTotal = 50f,
+                transactionCount = 10
+            ),
+            CategoryExpenseBreakdownUi(
+                categoryId = "2",
+                categoryName = "Transport",
+                categoryColorArgb = 0xFF00FF00.toInt(),
+                totalAmount = 3000,
+                totalIncome = 0,
+                totalExpense = 3000,
+                percentageOfTotal = 30f,
+                transactionCount = 5
+            ),
+            CategoryExpenseBreakdownUi(
+                categoryId = "3",
+                categoryName = "Entertainment",
+                categoryColorArgb = 0xFF0000FF.toInt(),
+                totalAmount = 2000,
+                totalIncome = 0,
+                totalExpense = 2000,
+                percentageOfTotal = 20f,
+                transactionCount = 3
+            )
+        )
+    )
     HomeScreenContent(
-        uiState = HomeUiState(),
+        uiState = homeUiState,
         snackbarHostState = SnackbarHostState(),
         onDateRangeSelected = onDateRangeSelected,
         onNavigateToCategoryDetail = {},

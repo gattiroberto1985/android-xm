@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import it.gr85.android.apps.em.ui.TextViewDateFormatter
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -68,9 +69,9 @@ fun MyDp(
             .clickable(onClick = { showDatePicker = true })
     ) {
         // usare interfaccia TextFormatter con metodo format
-        Text(text = state.getSelectedStartDate().toString() )
+        Text(text = TextViewDateFormatter.format(state.getSelectedStartDate() ) )
         Text(text = " - ")
-        Text(text = state.getSelectedEndDate().toString() )
+        Text(text = TextViewDateFormatter.format(state.getSelectedEndDate() ) )
     }
 
     if ( !showDatePicker ) {
@@ -92,8 +93,8 @@ fun MyDp(
             TextButton(
                 onClick = {
                     onRangeDateSelected(
-                        state.getSelectedStartDate().toString(),
-                        state.getSelectedEndDate().toString()
+                        TextViewDateFormatter.format(state.getSelectedStartDate() ),
+                        TextViewDateFormatter.format(state.getSelectedEndDate() )
                     )
                     showDatePicker = false  // ← Auto-chiudi dopo salvataggio
                 },

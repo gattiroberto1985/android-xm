@@ -43,13 +43,15 @@ interface ARCategoryDao {
             c.id,
             c.name,
             c.hex_color,
-            COALESCE(SUM(CAST(t.amount AS REAL)), 0) as total_amount,
-            COALESCE(COUNT(t.id), 0) as transaction_count
+            t.type,
+        COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN CAST(t.amount AS REAL) ELSE 0 END), 0) as total_income,
+        COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN CAST(t.amount AS REAL) ELSE 0 END), 0) as total_expense,
+        COALESCE(COUNT(t.id), 0) as transaction_count
         FROM categories c
         LEFT JOIN transactions t ON c.id = t.category_id
         WHERE t.date BETWEEN :startDateEpoch AND :endDateEpoch
-        GROUP BY c.id, c.name, c.hex_color
-        ORDER BY total_amount DESC
+        GROUP BY c.id, c.name, c.hex_color, t.type
+        ORDER BY c.name ASC, t.type ASC
     """)
     suspend fun getExpenseBreakdown(
         startDateEpoch: Long,
