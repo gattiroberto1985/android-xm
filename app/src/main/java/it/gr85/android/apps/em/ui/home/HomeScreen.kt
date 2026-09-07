@@ -1,25 +1,33 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package it.gr85.android.apps.em.ui.home
 
-import android.util.Log
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
 import it.gr85.android.apps.em.ui.home.components.AddTransactionDialog
 import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
@@ -54,7 +61,6 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val snackScope = rememberCoroutineScope()
 
-    // EFFETTO 1: Navigazione (richiede viewModel)
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -71,7 +77,6 @@ fun HomeScreen(
         }
     }
 
-    // EFFETTO 2: Snackbar (richiede snackbarHostState)
     LaunchedEffect(uiState.snackbarMessage) {
         uiState.snackbarMessage?.let { message ->
             snackScope.launch {
@@ -99,97 +104,154 @@ fun HomeScreenContent(
     onNavigateToSearch: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
-
-    val pagerState = rememberPagerState( pageCount = { 2 } )
-
+    val pagerState = rememberPagerState(pageCount = { 2 })
     var showAddDialog by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var drawerOpened by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth().zIndex(1f)
+    LaunchedEffect(drawerOpened) {
+        if (drawerOpened) {
+            drawerState.open()
+        } else {
+            drawerState.close()
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Menu",
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Impostazioni") },
+                    selected = false,
+                    onClick = {
+                        onNavigateToSettings()
+                        drawerOpened = false
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Ricerca") },
+                    selected = false,
+                    onClick = {
+                        onNavigateToSearch()
+                        drawerOpened = false
+                    }
+                )
+            }
+        }
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().zIndex(1f)
-        ) {
-            MyDp(
-                from = uiState.dateRange.start,
-                to = uiState.dateRange.end,
-                onRangeDateSelected = onDateRangeSelected
-            )
-
-            BalanceSummaryCard(
-                balance = uiState.dateRangeBalance,
-                totalIncome = uiState.totalIncome,
-                totalExpense = uiState.totalExpense
-            )
-
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth(),
-                userScrollEnabled = true
-            ) { page ->
-                Box(
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Home") },
+                    actions = {
+                        IconButton(onClick = { drawerOpened = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Apri menu"
+                            )
+                        }
+                    }
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showAddDialog = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Aggiungi transazione"
+                    )
+                }
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight(),
-                    contentAlignment = Alignment.Center
+                        .zIndex(1f)
                 ) {
-                    when (page) {
-                        0 -> PieChartWithLegend(
-                            title = "Spese per categoria",
-                            slices = uiState.categoryExpensesBreakdown.map {
-                                PieSlice(
-                                    label = it.categoryName,
-                                    value = it.totalExpense.toFloat(),
-                                    color = Color(it.categoryColorArgb)
-                                )
-                            },
-                            onSliceTapped = { slice ->
-                                onNavigateToCategoryDetail(slice.label)
-                            }
-                        )
+                    MyDp(
+                        from = uiState.dateRange.start,
+                        to = uiState.dateRange.end,
+                        onRangeDateSelected = onDateRangeSelected
+                    )
 
-                        1 -> PieChartWithLegend(
-                            title = "Reddito per categoria",
-                            slices = uiState.categoryExpensesBreakdown.map {
-                                PieSlice(
-                                    label = it.categoryName,
-                                    value = it.totalIncome.toFloat(),
-                                    color = Color(it.categoryColorArgb)
+                    BalanceSummaryCard(
+                        balance = uiState.dateRangeBalance,
+                        totalIncome = uiState.totalIncome,
+                        totalExpense = uiState.totalExpense
+                    )
+
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        userScrollEnabled = true
+                    ) { page ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when (page) {
+                                0 -> PieChartWithLegend(
+                                    title = "Spese per categoria",
+                                    slices = uiState.categoryExpensesBreakdown.map {
+                                        PieSlice(
+                                            label = it.categoryName,
+                                            value = it.totalExpense.toFloat(),
+                                            color = Color(it.categoryColorArgb)
+                                        )
+                                    },
+                                    onSliceTapped = { slice ->
+                                        onNavigateToCategoryDetail(slice.label)
+                                    }
                                 )
-                            },
-                            onSliceTapped = { slice ->
-                                onNavigateToCategoryDetail(slice.label)
+
+                                1 -> PieChartWithLegend(
+                                    title = "Reddito per categoria",
+                                    slices = uiState.categoryExpensesBreakdown.map {
+                                        PieSlice(
+                                            label = it.categoryName,
+                                            value = it.totalIncome.toFloat(),
+                                            color = Color(it.categoryColorArgb)
+                                        )
+                                    },
+                                    onSliceTapped = { slice ->
+                                        onNavigateToCategoryDetail(slice.label)
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
         }
-
-        FloatingActionButton(
-            onClick = { showAddDialog = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Aggiungi transazione"
-            )
-        }
-
     }
 
     if (showAddDialog) {
         AddTransactionDialog(
             onDismiss = { showAddDialog = false },
             onConfirm = { description, amount ->
-                // TODO : da delegare a controller!!
+                // TODO: collegare a ViewModel / UseCase
                 showAddDialog = false
             }
         )
     }
-
 }
 
 @Preview
@@ -197,7 +259,6 @@ fun HomeScreenContent(
 fun HomeScreenPreview(
     onDateRangeSelected: (start: String, end: String) -> Unit = { _, _ -> },
 ) {
-
     val homeUiState = HomeUiState(
         categoryExpensesBreakdown = listOf(
             CategoryExpenseBreakdownUi(
@@ -232,6 +293,7 @@ fun HomeScreenPreview(
             )
         )
     )
+
     HomeScreenContent(
         uiState = homeUiState,
         snackbarHostState = SnackbarHostState(),
