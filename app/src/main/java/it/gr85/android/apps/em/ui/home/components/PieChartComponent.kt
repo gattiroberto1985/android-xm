@@ -38,6 +38,7 @@ data class PieSlice(
 
 @Composable
 fun PieChartWithLegend(
+    title: String,
     slices: List<PieSlice>,
     modifier: Modifier = Modifier,
     onSliceTapped: (PieSlice) -> Unit = {}
@@ -51,6 +52,11 @@ fun PieChartWithLegend(
         modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         // PIE CHART
         PieChartCanvas(
             slices = slices,
@@ -231,6 +237,7 @@ fun PieChartPreview() {
     )
 
     PieChartWithLegend(
+        title = "ESEMPIO DI PIE CHART",
         slices = sampleData,
         onSliceTapped = { slice ->
             println("Tappato: ${slice.label}")

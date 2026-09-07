@@ -1,11 +1,22 @@
 package it.gr85.android.apps.em.ui.home
 
 import android.util.Log
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -16,12 +27,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
+import it.gr85.android.apps.em.ui.home.components.AddTransactionDialog
 import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
 import it.gr85.android.apps.em.ui.home.components.PieChartWithLegend
@@ -86,64 +100,96 @@ fun HomeScreenContent(
     snackbarHostState: SnackbarHostState
 ) {
 
-    Column(
+    val pagerState = rememberPagerState( pageCount = { 2 } )
+
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    Box(
         modifier = Modifier.fillMaxWidth().zIndex(1f)
     ) {
-        MyDp(
-            from = uiState.dateRange.start,
-            to = uiState.dateRange.end,
-            onRangeDateSelected = onDateRangeSelected
-        )
-
-        BalanceSummaryCard(
-            balance = uiState.dateRangeBalance,
-            totalIncome = uiState.totalIncome,
-            totalExpense = uiState.totalExpense
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+        Column(
+            modifier = Modifier.fillMaxWidth().zIndex(1f)
         ) {
-            PieChartWithLegend(
-                slices = uiState.categoryExpensesBreakdown.map {
-                    PieSlice(
-                        label = it.categoryName,
-                        value = it.totalExpense.toFloat(),
-                        color = Color(it.categoryColorArgb)
-                    )
-                },
-                onSliceTapped = { slice ->
-                    onNavigateToCategoryDetail(slice.label)
-                }
-            )
-            PieChartWithLegend(
-                slices = uiState.categoryExpensesBreakdown.map {
-                    PieSlice(
-                        label = it.categoryName,
-                        value = it.totalIncome.toFloat(),
-                        color = Color(it.categoryColorArgb)
-                    )
-                },
-                onSliceTapped = { slice ->
-                    onNavigateToCategoryDetail(slice.label)
-                }
+            MyDp(
+                from = uiState.dateRange.start,
+                to = uiState.dateRange.end,
+                onRangeDateSelected = onDateRangeSelected
             )
 
+            BalanceSummaryCard(
+                balance = uiState.dateRangeBalance,
+                totalIncome = uiState.totalIncome,
+                totalExpense = uiState.totalExpense
+            )
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth(),
+                userScrollEnabled = true
+            ) { page ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (page) {
+                        0 -> PieChartWithLegend(
+                            title = "Spese per categoria",
+                            slices = uiState.categoryExpensesBreakdown.map {
+                                PieSlice(
+                                    label = it.categoryName,
+                                    value = it.totalExpense.toFloat(),
+                                    color = Color(it.categoryColorArgb)
+                                )
+                            },
+                            onSliceTapped = { slice ->
+                                onNavigateToCategoryDetail(slice.label)
+                            }
+                        )
+
+                        1 -> PieChartWithLegend(
+                            title = "Reddito per categoria",
+                            slices = uiState.categoryExpensesBreakdown.map {
+                                PieSlice(
+                                    label = it.categoryName,
+                                    value = it.totalIncome.toFloat(),
+                                    color = Color(it.categoryColorArgb)
+                                )
+                            },
+                            onSliceTapped = { slice ->
+                                onNavigateToCategoryDetail(slice.label)
+                            }
+                        )
+                    }
+                }
+            }
         }
+
+        FloatingActionButton(
+            onClick = { showAddDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Aggiungi transazione"
+            )
+        }
+
     }
 
-    /*Button(
-        onClick = {
-            snackScope.launch {
-                snackbarHostState.showSnackbar("Hello from snackbar!")
+    if (showAddDialog) {
+        AddTransactionDialog(
+            onDismiss = { showAddDialog = false },
+            onConfirm = { description, amount ->
+                // TODO : da delegare a controller!!
+                showAddDialog = false
             }
-            Log.i( "EMBOB", "Button clicked, launching snackbar notification!" )
-        }
-    ) {
-        Log.i( "EMBOB", "Button clicked, launching snackbar notification!" )
-        Text(text = "Send a notification in the snackbar")
-    }*/
+        )
+    }
+
 }
 
 @Preview
