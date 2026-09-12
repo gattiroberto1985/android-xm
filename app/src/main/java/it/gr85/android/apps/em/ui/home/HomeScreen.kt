@@ -246,10 +246,12 @@ fun HomeScreenContent(
     if (showAddDialog) {
         AddTransactionDialog(
             onDismiss = { showAddDialog = false },
-            onConfirm = { description, amount ->
+            onConfirm = { description, amount, category, transactionType ->
                 // TODO: collegare a ViewModel / UseCase
                 showAddDialog = false
-            }
+            },
+            categories = uiState.categoryExpensesBreakdown.map { it.categoryName },
+            transactionTypes = listOf("Entrata", "Uscita") // TODO: this is wrong!
         )
     }
 }
