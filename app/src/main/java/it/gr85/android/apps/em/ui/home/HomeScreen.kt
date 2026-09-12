@@ -5,17 +5,19 @@ package it.gr85.android.apps.em.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -104,13 +106,12 @@ fun HomeScreenContent(
     onNavigateToSearch: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
     var showAddDialog by remember { mutableStateOf(false) }
 
     val drawerScope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    //var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
+    var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -193,50 +194,54 @@ fun HomeScreenContent(
                         totalExpense = uiState.totalExpense
                     )
 
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxWidth(),
-                        userScrollEnabled = true
-                    ) { page ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            when (page) {
-                                0 -> PieChartWithLegend(
-                                    title = "Spese per categoria",
-                                    slices = uiState.categoryExpensesBreakdown.map {
-                                        PieSlice(
-                                            categoryId = it.categoryId,
-                                            label = it.categoryName,
-                                            value = it.totalExpense.toFloat(),
-                                            color = Color(it.categoryColorArgb)
-                                        )
-                                    },
-                                    onSliceTapped = { slice ->
-                                        onNavigateToCategoryDetail(slice.categoryId)
-                                    }
-                                )
-
-                                1 -> PieChartWithLegend(
-                                    title = "Reddito per categoria",
-                                    slices = uiState.categoryExpensesBreakdown.map {
-                                        PieSlice(
-                                            categoryId = it.categoryId,
-                                            label = it.categoryName,
-                                            value = it.totalIncome.toFloat(),
-                                            color = Color(it.categoryColorArgb)
-                                        )
-                                    },
-                                    onSliceTapped = { slice ->
-                                        onNavigateToCategoryDetail(slice.categoryId)
-                                    }
-                                )
-                            }
-                        }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        FilterChip(
+                            selected = chartMode == ChartMode.EXPENSES,
+                            onClick = { chartMode = ChartMode.EXPENSES },
+                            label = { Text("Spese") }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        FilterChip(
+                            selected = chartMode == ChartMode.INCOME,
+                            onClick = { chartMode = ChartMode.INCOME },
+                            label = { Text("Reddito") }
+                        )
                     }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val (title, valueExtractor) = when (chartMode) {
+                            ChartMode.EXPENSES -> "Spese per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalExpense }
+                            ChartMode.INCOME -> "Reddito per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalIncome }
+                        }
+
+                        PieChartWithLegend(
+                            title = title,
+                            slices = uiState.categoryExpensesBreakdown.map { breakdown ->
+                                PieSlice(
+                                    categoryId = breakdown.categoryId,  // ← Già aggiunto al punto 2
+                                    label = breakdown.categoryName,
+                                    value = valueExtractor(breakdown).toFloat(),
+                                    color = Color(breakdown.categoryColorArgb)
+                                )
+                            },
+                            onSliceTapped = { slice ->
+                                onNavigateToCategoryDetail(slice.categoryId)  // ← Usa categoryId
+                            }
+                        )
+                    }
+
+
+
                 }
             }
         }
