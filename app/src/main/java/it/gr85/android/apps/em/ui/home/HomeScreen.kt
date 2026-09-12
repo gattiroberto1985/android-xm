@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -44,13 +45,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.gr85.android.apps.em.domain.model.DateRange
 import it.gr85.android.apps.em.ui.home.components.AddTransactionDialog
 import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
 import it.gr85.android.apps.em.ui.home.components.PieChartWithLegend
 import it.gr85.android.apps.em.ui.home.components.PieSlice
 import it.gr85.android.apps.em.ui.model.CategoryExpenseBreakdownUi
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+// region SCREEN ROOT
 
 @Composable
 fun HomeScreen(
@@ -97,6 +102,10 @@ fun HomeScreen(
     )
 }
 
+// endregion SCREEN ROOT
+
+// region SCREEN CONTENT
+
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
@@ -107,55 +116,26 @@ fun HomeScreenContent(
     snackbarHostState: SnackbarHostState
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
-
     val drawerScope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
     var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
-                Text(
-                    text = "Menu",
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Impostazioni") },
-                    selected = false,
-                    onClick = {
-                        onNavigateToSettings()
-                        drawerScope.launch { drawerState.close() }
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Ricerca") },
-                    selected = false,
-                    onClick = {
-                        onNavigateToSearch()
-                        drawerScope.launch { drawerState.close() }
-                    }
-                )
-            }
+            HomeScreenDrawerContent(
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToSearch = onNavigateToSearch,
+                drawerScope = drawerScope,
+                drawerState = drawerState
+            )
         }
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Home") },
-                    actions = {
-                        IconButton(onClick = {
-                            drawerScope.launch { drawerState.open() }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Apri menu"
-                            )
-                        }
-                    }
+                HomeScreenTopBar(
+                    drawerScope = drawerScope,
+                    drawerState = drawerState
                 )
             },
             floatingActionButton = {
@@ -182,66 +162,20 @@ fun HomeScreenContent(
                         .fillMaxWidth()
                         .zIndex(1f)
                 ) {
-                    MyDp(
-                        from = uiState.dateRange.start,
-                        to = uiState.dateRange.end,
-                        onRangeDateSelected = onDateRangeSelected
-                    )
-
-                    BalanceSummaryCard(
+                    HomeScreenTopContent(
+                        dateRange = uiState.dateRange,
+                        onDateRangeSelected = onDateRangeSelected,
                         balance = uiState.dateRangeBalance,
                         totalIncome = uiState.totalIncome,
                         totalExpense = uiState.totalExpense
                     )
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        FilterChip(
-                            selected = chartMode == ChartMode.EXPENSES,
-                            onClick = { chartMode = ChartMode.EXPENSES },
-                            label = { Text("Spese") }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        FilterChip(
-                            selected = chartMode == ChartMode.INCOME,
-                            onClick = { chartMode = ChartMode.INCOME },
-                            label = { Text("Reddito") }
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val (title, valueExtractor) = when (chartMode) {
-                            ChartMode.EXPENSES -> "Spese per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalExpense }
-                            ChartMode.INCOME -> "Reddito per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalIncome }
-                        }
-
-                        PieChartWithLegend(
-                            title = title,
-                            slices = uiState.categoryExpensesBreakdown.map { breakdown ->
-                                PieSlice(
-                                    categoryId = breakdown.categoryId,  // ← Già aggiunto al punto 2
-                                    label = breakdown.categoryName,
-                                    value = valueExtractor(breakdown).toFloat(),
-                                    color = Color(breakdown.categoryColorArgb)
-                                )
-                            },
-                            onSliceTapped = { slice ->
-                                onNavigateToCategoryDetail(slice.categoryId)  // ← Usa categoryId
-                            }
-                        )
-                    }
-
-
-
+                    HomeScreenChartSection(
+                        chartMode = chartMode,
+                        onChartModeChanged = { chartMode = it },
+                        categoryBreakdown = uiState.categoryExpensesBreakdown,
+                        onNavigateToCategoryDetail = onNavigateToCategoryDetail
+                    )
                 }
             }
         }
@@ -259,6 +193,144 @@ fun HomeScreenContent(
         )
     }
 }
+
+// endregion SCREEN CONTENT
+
+// region SUB-COMPONENTS
+
+@Composable
+private fun HomeScreenTopBar(
+    drawerScope: CoroutineScope,
+    drawerState: DrawerState
+) {
+    TopAppBar(
+        title = { Text("Home") },
+        actions = {
+            IconButton(onClick = {
+                drawerScope.launch { drawerState.open() }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Apri menu"
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun HomeScreenDrawerContent(
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearch: () -> Unit,
+    drawerScope: CoroutineScope,
+    drawerState: DrawerState
+) {
+    ModalDrawerSheet {
+        Text(
+            text = "Menu",
+            modifier = Modifier.padding(16.dp)
+        )
+
+        NavigationDrawerItem(
+            label = { Text("Impostazioni") },
+            selected = false,
+            onClick = {
+                onNavigateToSettings()
+                drawerScope.launch { drawerState.close() }
+            }
+        )
+
+        NavigationDrawerItem(
+            label = { Text("Ricerca") },
+            selected = false,
+            onClick = {
+                onNavigateToSearch()
+                drawerScope.launch { drawerState.close() }
+            }
+        )
+    }
+}
+
+@Composable
+private fun HomeScreenTopContent(
+    dateRange: DateRange,
+    onDateRangeSelected: (start: String, end: String) -> Unit,
+    balance: Long,
+    totalIncome: Long,
+    totalExpense: Long
+) {
+    MyDp(
+        from = dateRange.start,
+        to = dateRange.end,
+        onRangeDateSelected = onDateRangeSelected
+    )
+
+    BalanceSummaryCard(
+        balance = balance,
+        totalIncome = totalIncome,
+        totalExpense = totalExpense
+    )
+}
+
+@Composable
+private fun HomeScreenChartSection(
+    chartMode: ChartMode,
+    onChartModeChanged: (ChartMode) -> Unit,
+    categoryBreakdown: List<CategoryExpenseBreakdownUi>,
+    onNavigateToCategoryDetail: (categoryId: String) -> Unit
+) {
+    // Chart mode toggle buttons
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        FilterChip(
+            selected = chartMode == ChartMode.EXPENSES,
+            onClick = { onChartModeChanged(ChartMode.EXPENSES) },
+            label = { Text("Spese") }
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        FilterChip(
+            selected = chartMode == ChartMode.INCOME,
+            onClick = { onChartModeChanged(ChartMode.INCOME) },
+            label = { Text("Reddito") }
+        )
+    }
+
+    // Chart rendering
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        val (title, valueExtractor) = when (chartMode) {
+            ChartMode.EXPENSES -> "Spese per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalExpense }
+            ChartMode.INCOME -> "Reddito per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalIncome }
+        }
+
+        PieChartWithLegend(
+            title = title,
+            slices = categoryBreakdown.map { breakdown ->
+                PieSlice(
+                    categoryId = breakdown.categoryId,
+                    label = breakdown.categoryName,
+                    value = valueExtractor(breakdown).toFloat(),
+                    color = Color(breakdown.categoryColorArgb)
+                )
+            },
+            onSliceTapped = { slice ->
+                onNavigateToCategoryDetail(slice.categoryId)
+            }
+        )
+    }
+}
+
+// endregion SUB-COMPONENTS
+
+// region PREVIEWS
 
 @Preview
 @Composable
@@ -309,3 +381,5 @@ fun HomeScreenPreview(
         onNavigateToSearch = {}
     )
 }
+
+// endregion PREVIEWS
