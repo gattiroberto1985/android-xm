@@ -2,6 +2,7 @@
 
 package it.gr85.android.apps.em.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,12 +10,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +51,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.gr85.android.apps.em.domain.model.DateRange
+import it.gr85.android.apps.em.ui.AppColors
+import it.gr85.android.apps.em.ui.AppShapes
+import it.gr85.android.apps.em.ui.AppSpacing
+import it.gr85.android.apps.em.ui.AppTypography
 import it.gr85.android.apps.em.ui.home.components.AddTransactionDialog
 import it.gr85.android.apps.em.ui.home.components.BalanceSummaryCard
 import it.gr85.android.apps.em.ui.home.components.MyDp
@@ -156,10 +165,12 @@ fun HomeScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .background(AppColors.Background)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                         .zIndex(1f)
                 ) {
                     HomeScreenTopContent(
@@ -170,12 +181,16 @@ fun HomeScreenContent(
                         totalExpense = uiState.totalExpense
                     )
 
+                    Spacer(modifier = Modifier.height(AppSpacing.lg))
+
                     HomeScreenChartSection(
                         chartMode = chartMode,
                         onChartModeChanged = { chartMode = it },
                         categoryBreakdown = uiState.categoryExpensesBreakdown,
                         onNavigateToCategoryDetail = onNavigateToCategoryDetail
                     )
+
+                    Spacer(modifier = Modifier.height(AppSpacing.xl))
                 }
             }
         }
@@ -196,7 +211,7 @@ fun HomeScreenContent(
 
 // endregion SCREEN CONTENT
 
-// region SUB-COMPONENTS
+// region SUB COMPONENTS
 
 @Composable
 private fun HomeScreenTopBar(
@@ -204,7 +219,12 @@ private fun HomeScreenTopBar(
     drawerState: DrawerState
 ) {
     TopAppBar(
-        title = { Text("Home") },
+        title = {
+            Text(
+                "Home",
+                style = AppTypography.TitleLarge
+            )
+        },
         actions = {
             IconButton(onClick = {
                 drawerScope.launch { drawerState.open() }
@@ -228,11 +248,27 @@ private fun HomeScreenDrawerContent(
     ModalDrawerSheet {
         Text(
             text = "Menu",
-            modifier = Modifier.padding(16.dp)
+            style = AppTypography.HeadlineMedium,
+            modifier = Modifier.padding(AppSpacing.lg)
         )
 
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppSpacing.md),
+            color = AppColors.Divider,
+            thickness = 1.dp
+        )
+
+        Spacer(modifier = Modifier.height(AppSpacing.md))
+
         NavigationDrawerItem(
-            label = { Text("Impostazioni") },
+            label = {
+                Text(
+                    "Impostazioni",
+                    style = AppTypography.BodyLarge
+                )
+            },
             selected = false,
             onClick = {
                 onNavigateToSettings()
@@ -241,7 +277,12 @@ private fun HomeScreenDrawerContent(
         )
 
         NavigationDrawerItem(
-            label = { Text("Ricerca") },
+            label = {
+                Text(
+                    "Ricerca",
+                    style = AppTypography.BodyLarge
+                )
+            },
             selected = false,
             onClick = {
                 onNavigateToSearch()
@@ -259,17 +300,35 @@ private fun HomeScreenTopContent(
     totalIncome: Long,
     totalExpense: Long
 ) {
-    MyDp(
-        from = dateRange.start,
-        to = dateRange.end,
-        onRangeDateSelected = onDateRangeSelected
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacing.md)
+    ) {
+        MyDp(
+            from = dateRange.start,
+            to = dateRange.end,
+            onRangeDateSelected = onDateRangeSelected
+        )
 
-    BalanceSummaryCard(
-        balance = balance,
-        totalIncome = totalIncome,
-        totalExpense = totalExpense
-    )
+        Spacer(modifier = Modifier.height(AppSpacing.lg))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppColors.SurfaceElevated,
+                    shape = AppShapes.Medium
+                )
+                .padding(AppSpacing.md)
+        ) {
+            BalanceSummaryCard(
+                balance = balance,
+                totalIncome = totalIncome,
+                totalExpense = totalExpense
+            )
+        }
+    }
 }
 
 @Composable
@@ -279,56 +338,99 @@ private fun HomeScreenChartSection(
     categoryBreakdown: List<CategoryExpenseBreakdownUi>,
     onNavigateToCategoryDetail: (categoryId: String) -> Unit
 ) {
-    // Chart mode toggle buttons
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.Center
+            .padding(horizontal = AppSpacing.md)
     ) {
-        FilterChip(
-            selected = chartMode == ChartMode.EXPENSES,
-            onClick = { onChartModeChanged(ChartMode.EXPENSES) },
-            label = { Text("Spese") }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        FilterChip(
-            selected = chartMode == ChartMode.INCOME,
-            onClick = { onChartModeChanged(ChartMode.INCOME) },
-            label = { Text("Reddito") }
-        )
-    }
-
-    // Chart rendering
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        contentAlignment = Alignment.Center
-    ) {
-        val (title, valueExtractor) = when (chartMode) {
-            ChartMode.EXPENSES -> "Spese per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalExpense }
-            ChartMode.INCOME -> "Reddito per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalIncome }
+        // Chart mode toggle buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = AppSpacing.md,
+                    vertical = AppSpacing.md
+                )
+                .background(
+                    color = AppColors.SurfaceElevated,
+                    shape = AppShapes.Medium
+                )
+                .padding(AppSpacing.md),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            FilterChip(
+                selected = chartMode == ChartMode.EXPENSES,
+                onClick = { onChartModeChanged(ChartMode.EXPENSES) },
+                label = {
+                    Text(
+                        "Spese",
+                        style = AppTypography.LabelMedium
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.width(AppSpacing.md))
+            FilterChip(
+                selected = chartMode == ChartMode.INCOME,
+                onClick = { onChartModeChanged(ChartMode.INCOME) },
+                label = {
+                    Text(
+                        "Reddito",
+                        style = AppTypography.LabelMedium
+                    )
+                }
+            )
         }
 
-        PieChartWithLegend(
-            title = title,
-            slices = categoryBreakdown.map { breakdown ->
-                PieSlice(
-                    categoryId = breakdown.categoryId,
-                    label = breakdown.categoryName,
-                    value = valueExtractor(breakdown).toFloat(),
-                    color = Color(breakdown.categoryColorArgb)
+        Spacer(modifier = Modifier.height(AppSpacing.lg))
+
+        // Chart rendering
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(
+                    color = AppColors.Surface,
+                    shape = AppShapes.Large
                 )
-            },
-            onSliceTapped = { slice ->
-                onNavigateToCategoryDetail(slice.categoryId)
+                .padding(AppSpacing.lg),
+            contentAlignment = Alignment.Center
+        ) {
+            val (title, valueExtractor) = when (chartMode) {
+                ChartMode.EXPENSES -> "Spese per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalExpense }
+                ChartMode.INCOME -> "Reddito per categoria" to { bd: CategoryExpenseBreakdownUi -> bd.totalIncome }
             }
-        )
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = title,
+                    style = AppTypography.TitleLarge,
+                    color = AppColors.TextPrimary,
+                    modifier = Modifier.padding(bottom = AppSpacing.md)
+                )
+
+                PieChartWithLegend(
+                    title = "",  // Titolo gestito qui sopra
+                    slices = categoryBreakdown.map { breakdown ->
+                        PieSlice(
+                            categoryId = breakdown.categoryId,
+                            label = breakdown.categoryName,
+                            value = valueExtractor(breakdown).toFloat(),
+                            color = Color(breakdown.categoryColorArgb)
+                        )
+                    },
+                    onSliceTapped = { slice ->
+                        onNavigateToCategoryDetail(slice.categoryId)
+                    }
+                )
+            }
+        }
     }
 }
 
-// endregion SUB-COMPONENTS
+// endregion SUB COMPONENTS
 
 // region PREVIEWS
 
@@ -342,7 +444,7 @@ fun HomeScreenPreview(
             CategoryExpenseBreakdownUi(
                 categoryId = "1",
                 categoryName = "Food",
-                categoryColorArgb = 0xFFFF0000.toInt(),
+                categoryColorArgb = 0xFFFF6B6B.toInt(),
                 totalAmount = 5000,
                 totalIncome = 0,
                 totalExpense = 5000,
@@ -352,7 +454,7 @@ fun HomeScreenPreview(
             CategoryExpenseBreakdownUi(
                 categoryId = "2",
                 categoryName = "Transport",
-                categoryColorArgb = 0xFF00FF00.toInt(),
+                categoryColorArgb = 0xFF4ECDC4.toInt(),
                 totalAmount = 3000,
                 totalIncome = 0,
                 totalExpense = 3000,
@@ -362,7 +464,7 @@ fun HomeScreenPreview(
             CategoryExpenseBreakdownUi(
                 categoryId = "3",
                 categoryName = "Entertainment",
-                categoryColorArgb = 0xFF0000FF.toInt(),
+                categoryColorArgb = 0xFF95E1D3.toInt(),
                 totalAmount = 2000,
                 totalIncome = 0,
                 totalExpense = 2000,

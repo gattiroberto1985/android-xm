@@ -26,4 +26,10 @@ object AppColors {
     val CategoryFood = Color(0xFFFF6B6B)
     val CategoryTransport = Color(0xFF4ECDC4)
     val CategoryOther = Color(0xFF95E1D3)
+
+    // Surface elevata (per card con elevation visiva)
+    val SurfaceElevated = Color(0xFFF8F8F8)
+
+    // Overlay e divisori
+    val Divider = Color(0xFFE0E0E0)
 }
