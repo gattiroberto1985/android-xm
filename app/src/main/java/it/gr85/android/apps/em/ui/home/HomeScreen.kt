@@ -106,18 +106,11 @@ fun HomeScreenContent(
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     var showAddDialog by remember { mutableStateOf(false) }
+
+    val drawerScope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    var drawerOpened by remember { mutableStateOf(false) }
 
     //var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
-
-    LaunchedEffect(drawerOpened) {
-        if (drawerOpened) {
-            drawerState.open()
-        } else {
-            drawerState.close()
-        }
-    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -133,7 +126,7 @@ fun HomeScreenContent(
                     selected = false,
                     onClick = {
                         onNavigateToSettings()
-                        drawerOpened = false
+                        drawerScope.launch { drawerState.close() }
                     }
                 )
 
@@ -142,7 +135,7 @@ fun HomeScreenContent(
                     selected = false,
                     onClick = {
                         onNavigateToSearch()
-                        drawerOpened = false
+                        drawerScope.launch { drawerState.close() }
                     }
                 )
             }
@@ -153,7 +146,9 @@ fun HomeScreenContent(
                 TopAppBar(
                     title = { Text("Home") },
                     actions = {
-                        IconButton(onClick = { drawerOpened = true }) {
+                        IconButton(onClick = {
+                            drawerScope.launch { drawerState.open() }
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Apri menu"
