@@ -2,6 +2,7 @@ package it.gr85.android.apps.em.ui.home
 
 import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
 import it.gr85.android.apps.em.domain.model.DateRange
+import it.gr85.android.apps.em.domain.model.MovementType
 import it.gr85.android.apps.em.ui.model.CategoryExpenseBreakdownUi
 
 data class HomeUiState (
@@ -10,6 +11,7 @@ data class HomeUiState (
     val categoryExpensesBreakdown : List<CategoryExpenseBreakdownUi> = emptyList(),
     val dateRange                 : DateRange = DateRange.default30Days(),
     val balance                   : Long? = null,
+    val availableMovementTypes    : List<MovementType> = MovementType.entries.toList(),
     val error                     : String? = null,
     val snackbarMessage           : String? = null,
 ) {

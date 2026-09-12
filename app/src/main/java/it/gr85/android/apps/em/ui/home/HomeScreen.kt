@@ -255,7 +255,7 @@ fun HomeScreenContent(
                 showAddDialog = false
             },
             categories = uiState.categoryExpensesBreakdown.map { it.categoryName },
-            transactionTypes = listOf("Entrata", "Uscita") // TODO: this is wrong!
+            movementTypes = uiState.availableMovementTypes
         )
     }
 }
