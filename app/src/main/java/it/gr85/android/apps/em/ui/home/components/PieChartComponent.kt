@@ -31,6 +31,7 @@ import kotlin.math.atan2
 import kotlin.math.sqrt
 
 data class PieSlice(
+    val categoryId: String,
     val label: String,
     val value: Float,
     val color: Color
@@ -230,10 +231,10 @@ private fun detectTappedSlice(
 @Composable
 fun PieChartPreview() {
     val sampleData = listOf(
-        PieSlice("Cibo", 15000f, Color(0xFF4CAF50)),
-        PieSlice("Trasporti", 8000f, Color(0xFF2196F3)),
-        PieSlice("Intrattenimento", 5000f, Color(0xFFFF9800)),
-        PieSlice("Altro", 2000f, Color(0xFF9C27B0))
+        PieSlice("1","Cibo", 15000f, Color(0xFF4CAF50)),
+        PieSlice("2", "Trasporti", 8000f, Color(0xFF2196F3)),
+        PieSlice("3", "Intrattenimento", 5000f, Color(0xFFFF9800)),
+        PieSlice("4", "Altro", 2000f, Color(0xFF9C27B0))
     )
 
     PieChartWithLegend(

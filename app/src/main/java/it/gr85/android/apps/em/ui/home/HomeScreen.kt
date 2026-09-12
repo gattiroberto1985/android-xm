@@ -109,6 +109,8 @@ fun HomeScreenContent(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var drawerOpened by remember { mutableStateOf(false) }
 
+    //var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
+
     LaunchedEffect(drawerOpened) {
         if (drawerOpened) {
             drawerState.open()
@@ -212,13 +214,14 @@ fun HomeScreenContent(
                                     title = "Spese per categoria",
                                     slices = uiState.categoryExpensesBreakdown.map {
                                         PieSlice(
+                                            categoryId = it.categoryId,
                                             label = it.categoryName,
                                             value = it.totalExpense.toFloat(),
                                             color = Color(it.categoryColorArgb)
                                         )
                                     },
                                     onSliceTapped = { slice ->
-                                        onNavigateToCategoryDetail(slice.label)
+                                        onNavigateToCategoryDetail(slice.categoryId)
                                     }
                                 )
 
@@ -226,13 +229,14 @@ fun HomeScreenContent(
                                     title = "Reddito per categoria",
                                     slices = uiState.categoryExpensesBreakdown.map {
                                         PieSlice(
+                                            categoryId = it.categoryId,
                                             label = it.categoryName,
                                             value = it.totalIncome.toFloat(),
                                             color = Color(it.categoryColorArgb)
                                         )
                                     },
                                     onSliceTapped = { slice ->
-                                        onNavigateToCategoryDetail(slice.label)
+                                        onNavigateToCategoryDetail(slice.categoryId)
                                     }
                                 )
                             }
