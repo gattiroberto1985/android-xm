@@ -4,3 +4,5 @@ enum class ChartMode {
     EXPENSES,
     INCOME
 }
+
+val LOG_TAG = "GR85-EM"

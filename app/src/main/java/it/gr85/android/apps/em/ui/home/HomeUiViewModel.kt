@@ -2,12 +2,15 @@ package it.gr85.android.apps.em.ui.home
 
 import android.graphics.Color
 import android.graphics.Color.parseColor
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.gr85.android.apps.em.application.category.BalanceSummaryCommand
 import it.gr85.android.apps.em.application.category.CategoryBreakdownCommand
 import it.gr85.android.apps.em.application.category.GetBalanceSummary
 import it.gr85.android.apps.em.application.category.GetCategoryBreakdown
+import it.gr85.android.apps.em.application.transaction.AddTransactionUseCase
+import it.gr85.android.apps.em.application.transaction.AddTransactionCommand
 import it.gr85.android.apps.em.application.exceptions.InvalidDateRangeException
 import it.gr85.android.apps.em.domain.model.CategoryExpenseBreakdown
 import it.gr85.android.apps.em.domain.model.Date
@@ -30,7 +33,8 @@ import androidx.core.graphics.toColorInt
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeUiViewModel(
     private val getCategoryBreakdown: GetCategoryBreakdown,
-    private val getBalanceSummary: GetBalanceSummary
+    private val getBalanceSummary: GetBalanceSummary,
+    private val addTransactionUseCase: AddTransactionUseCase
 ) : ViewModel() {
 
     // stati privati (solo il viewmodel modifica)
@@ -58,13 +62,13 @@ class HomeUiViewModel(
             // cioè "appiattisci" gli eventi, tieni solo l'ultimo cancellando eventuali
             // precedenti ancora in corso ed esegui (map) quanto indicato nel blocco { }
             .flatMapLatest { unitSignal ->
-                println("🔄 flatMapLatest: ricevuto segnale, avvio loadHomeData()")
+                Log.i(LOG_TAG, "flatMapLatest: ricevuto segnale, avvio loadHomeData()")
                 // Ritorna un Flow che emette i dati necessari al modello
                 loadHomeData()
             }
             // Per ogni elemento emesso da loadHomeData(), fai questo
             .onEach { (breakdown, balance ) ->
-                println("✅ onEach: ricevuto (breakdown, balance), aggiorno state")
+                Log.i(LOG_TAG, "onEach: ricevuto (breakdown, balance), aggiorno state")
                 updateStateWithData(breakdown, balance)
             }
             // AVVIO: Lancia il tutto nel scope specificato
@@ -224,6 +228,58 @@ class HomeUiViewModel(
         // La retry semplicemente invalida i dati e forza il reload
         viewModelScope.launch {
             _invalidateSignal.emit(Unit)
+        }
+    }
+
+    /**
+     * Aggiunge una nuova transazione.
+     *
+     * Flusso:
+     * 1. Crea il comando con i dati dalla UI
+     * 2. Chiama lo use case
+     * 3. Se successo: invalida i dati (reload)
+     * 4. Mostra un messaggio di feedback all'utente (snackbar)
+     * Se errore: mostra il messaggio di errore
+     */
+    fun addNewTransaction(
+        description: String,
+        amount: Long,  // in centesimi
+        categoryId: String,
+        movementType: it.gr85.android.apps.em.domain.model.MovementType
+    ) {
+        viewModelScope.launch {
+            // Crea il comando
+            val command = AddTransactionCommand(
+                description = description,
+                amount = amount,
+                categoryId = categoryId,
+                movementType = movementType,
+                date = Date.now()
+            )
+
+            Log.i(LOG_TAG, "addNewTransaction: invocando use case con comando $command")
+
+            // Chiama lo use case
+            val result = addTransactionUseCase(command)
+
+            // Gestisci il risultato
+            result.onSuccess {
+                Log.i(LOG_TAG, "addNewTransaction: successo! invalido i dati")
+                // Aggiorna lo state con messaggio di successo
+                _uiState.value = _uiState.value.copy(
+                    snackbarMessage = "Transazione aggiunta con successo"
+                )
+                // Invalida i dati per fare il reload
+                _invalidateSignal.emit(Unit)
+            }
+
+            result.onFailure { exception ->
+                Log.e(LOG_TAG, "errore - ${exception.message}")
+                // Aggiorna lo state con messaggio di errore
+                _uiState.value = _uiState.value.copy(
+                    snackbarMessage = "Errore: ${exception.message ?: "Errore sconosciuto"}"
+                )
+            }
         }
     }
 

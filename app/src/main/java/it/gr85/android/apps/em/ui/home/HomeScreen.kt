@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.gr85.android.apps.em.domain.model.DateRange
+import it.gr85.android.apps.em.domain.model.MovementType
 import it.gr85.android.apps.em.ui.AppColors
 import it.gr85.android.apps.em.ui.AppShapes
 import it.gr85.android.apps.em.ui.AppSpacing
@@ -107,7 +108,10 @@ fun HomeScreen(
         onDateRangeSelected = { start, end -> viewModel.onDateRangeChanged(start, end) },
         onNavigateToCategoryDetail = onNavigateToCategoryDetail,
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToSearch = onNavigateToSearch
+        onNavigateToSearch = onNavigateToSearch,
+        onAddTransaction = { description, amount, categoryId, movementType ->
+            viewModel.addNewTransaction(description, amount, categoryId, movementType)
+        }
     )
 }
 
@@ -122,6 +126,7 @@ fun HomeScreenContent(
     onNavigateToCategoryDetail: (categoryId: String) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToSearch: () -> Unit,
+    onAddTransaction: (description: String, amount: Long, categoryId: String, movementType: MovementType) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
@@ -199,8 +204,24 @@ fun HomeScreenContent(
     if (showAddDialog) {
         AddTransactionDialog(
             onDismiss = { showAddDialog = false },
-            onConfirm = { description, amount, category, transactionType ->
-                // TODO: collegare a ViewModel / UseCase
+            onConfirm = { description, amount, categoryName, movementType ->
+                // Map nome categoria -> ID categoria
+                val selectedCategory = uiState.categoryExpensesBreakdown
+                    .find { it.categoryName == categoryName }
+
+                if (selectedCategory != null) {
+                    // Converte amount: String -> Long (centesimi)
+                    // Assumi che amount arrivi come String (es: "10.50")
+                    val amountInCents = try {
+                        (amount.toDouble() * 100).toLong()
+                    } catch (e: Exception) {
+                        // Se la conversione fallisce, mostra errore
+                        return@AddTransactionDialog
+                    }
+
+                    // Chiama il ViewModel
+                    onAddTransaction( description, amountInCents, selectedCategory.categoryId, movementType )
+                }
                 showAddDialog = false
             },
             categories = uiState.categoryExpensesBreakdown.map { it.categoryName },
@@ -480,7 +501,8 @@ fun HomeScreenPreview(
         onDateRangeSelected = onDateRangeSelected,
         onNavigateToCategoryDetail = {},
         onNavigateToSettings = {},
-        onNavigateToSearch = {}
+        onNavigateToSearch = {},
+        onAddTransaction = { _, _, _, _ -> }
     )
 }
 
