@@ -30,13 +30,13 @@ interface ARCategoryDao {
     suspend fun search(name: String): List<ARCategoryEntity>
 
     @Query("DELETE FROM categories WHERE id = :id")
-    suspend fun delete(id: String): Boolean
+    suspend fun delete(id: String): Int
 
     @Query("SELECT DISTINCT hex_color FROM categories")
-    suspend fun getUsedColors(): Set<String>
+    suspend fun getUsedColors(): List<String>
 
     @Query("SELECT * FROM categories ORDER BY name ASC") // occhio che va bene per robe "piccole" ( centinaia di righe)
-    suspend fun observeAll(): Flow<List<ARCategoryEntity>>
+    fun observeAll(): Flow<List<ARCategoryEntity>> // non si può avere suspend e flow insieme, perché flow è "lazy" e non si può sospendere la creazione del flow stesso, ma solo la sua emissione
 
     @Query("""
         SELECT 

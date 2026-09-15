@@ -14,7 +14,7 @@ interface ARTransactionDao {
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getById( id: String): ARTransactionEntity?
 
-    @Query("SELECT * FROM transactions WHERE description LIKE '%:description:%'")
+    @Query("SELECT * FROM transactions WHERE description LIKE '%' || :description || '%'")
     suspend fun getByDescription( description: String): List<ARTransactionEntity>
 
     @Query("SELECT * FROM transactions WHERE date >= :startDate")
@@ -55,7 +55,7 @@ interface ARTransactionDao {
     suspend fun insert( te: ARTransactionEntity): Long
 
     @Update
-    suspend fun update( te: ARTransactionEntity): Long
+    suspend fun update( te: ARTransactionEntity): Int
 
     @Query("""
     UPDATE transactions 

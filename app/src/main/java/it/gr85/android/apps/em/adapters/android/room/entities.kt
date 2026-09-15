@@ -55,7 +55,8 @@ data class ARTransactionEntity (
 data class CategoryExpenseRow(
     @ColumnInfo("id") val categoryId: String,
     @ColumnInfo("name") val categoryName: String,
-    @ColumnInfo("color") val categoryColor: String,
+    @ColumnInfo("hex_color") val categoryColor: String,
+    @ColumnInfo( "type") val movementType: String,
     @ColumnInfo("total_income") val totalIncome: Long,  // in cents
     @ColumnInfo("total_expense") val totalExpense: Long,  // in cents
     @ColumnInfo("transaction_count") val transactionCount: Int
