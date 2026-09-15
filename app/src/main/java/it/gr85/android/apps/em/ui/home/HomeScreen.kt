@@ -19,9 +19,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -130,73 +133,62 @@ fun HomeScreenContent(
     snackbarHostState: SnackbarHostState
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
-    val drawerScope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var menuExpanded by remember { mutableStateOf(false) }
     var chartMode by remember { mutableStateOf(ChartMode.EXPENSES) }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            HomeScreenDrawerContent(
+    Scaffold(
+        topBar = {
+            HomeScreenTopBar(
+                menuExpanded = menuExpanded,
+                onMenuExpanded = { menuExpanded = it },
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToSearch = onNavigateToSearch,
-                drawerScope = drawerScope,
-                drawerState = drawerState
+                onNavigateToSearch = onNavigateToSearch
             )
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                HomeScreenTopBar(
-                    drawerScope = drawerScope,
-                    drawerState = drawerState
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Aggiungi transazione"
-                    )
-                }
-            },
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            }
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .background(AppColors.Background)
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true }
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .zIndex(1f)
-                ) {
-                    HomeScreenTopContent(
-                        dateRange = uiState.dateRange,
-                        onDateRangeSelected = onDateRangeSelected,
-                        balance = uiState.dateRangeBalance,
-                        totalIncome = uiState.totalIncome,
-                        totalExpense = uiState.totalExpense
-                    )
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Aggiungi transazione"
+                )
+            }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(AppColors.Background)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .zIndex(1f)
+            ) {
+                HomeScreenTopContent(
+                    dateRange = uiState.dateRange,
+                    onDateRangeSelected = onDateRangeSelected,
+                    balance = uiState.dateRangeBalance,
+                    totalIncome = uiState.totalIncome,
+                    totalExpense = uiState.totalExpense
+                )
 
-                    Spacer(modifier = Modifier.height(AppSpacing.lg))
+                Spacer(modifier = Modifier.height(AppSpacing.lg))
 
-                    HomeScreenChartSection(
-                        chartMode = chartMode,
-                        onChartModeChanged = { chartMode = it },
-                        categoryBreakdown = uiState.categoryExpensesBreakdown,
-                        onNavigateToCategoryDetail = onNavigateToCategoryDetail
-                    )
+                HomeScreenChartSection(
+                    chartMode = chartMode,
+                    onChartModeChanged = { chartMode = it },
+                    categoryBreakdown = uiState.categoryExpensesBreakdown,
+                    onNavigateToCategoryDetail = onNavigateToCategoryDetail
+                )
 
-                    Spacer(modifier = Modifier.height(AppSpacing.xl))
-                }
+                Spacer(modifier = Modifier.height(AppSpacing.xl))
             }
         }
     }
@@ -236,82 +228,48 @@ fun HomeScreenContent(
 
 @Composable
 private fun HomeScreenTopBar(
-    drawerScope: CoroutineScope,
-    drawerState: DrawerState
+    menuExpanded: Boolean,
+    onMenuExpanded: (Boolean) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearch: () -> Unit
 ) {
     TopAppBar(
-        title = {
-            Text(
-                "Home",
-                style = AppTypography.TitleLarge
-            )
-        },
+        title = { Text("Home", style = AppTypography.TitleLarge) },
         actions = {
-            IconButton(onClick = {
-                drawerScope.launch { drawerState.open() }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Apri menu"
-                )
+            Box {
+                IconButton(onClick = { onMenuExpanded(!menuExpanded) }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Apri menu"
+                    )
+                }
+
+                // DropdownMenu appare sotto l'icon
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { onMenuExpanded(false) }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Impostazioni") },
+                        onClick = {
+                            onNavigateToSettings()
+                            onMenuExpanded(false)
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Ricerca") },
+                        onClick = {
+                            onNavigateToSearch()
+                            onMenuExpanded(false)
+                        }
+                    )
+                }
             }
         }
     )
 }
 
-@Composable
-private fun HomeScreenDrawerContent(
-    onNavigateToSettings: () -> Unit,
-    onNavigateToSearch: () -> Unit,
-    drawerScope: CoroutineScope,
-    drawerState: DrawerState
-) {
-    ModalDrawerSheet {
-        Text(
-            text = "Menu",
-            style = AppTypography.HeadlineMedium,
-            modifier = Modifier.padding(AppSpacing.lg)
-        )
-
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = AppSpacing.md),
-            color = AppColors.Divider,
-            thickness = 1.dp
-        )
-
-        Spacer(modifier = Modifier.height(AppSpacing.md))
-
-        NavigationDrawerItem(
-            label = {
-                Text(
-                    "Impostazioni",
-                    style = AppTypography.BodyLarge
-                )
-            },
-            selected = false,
-            onClick = {
-                onNavigateToSettings()
-                drawerScope.launch { drawerState.close() }
-            }
-        )
-
-        NavigationDrawerItem(
-            label = {
-                Text(
-                    "Ricerca",
-                    style = AppTypography.BodyLarge
-                )
-            },
-            selected = false,
-            onClick = {
-                onNavigateToSearch()
-                drawerScope.launch { drawerState.close() }
-            }
-        )
-    }
-}
 
 @Composable
 private fun HomeScreenTopContent(
